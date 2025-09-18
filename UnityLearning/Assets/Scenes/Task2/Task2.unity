@@ -733,8 +733,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   orbitRadius: 5
   rotationSpeed: 60
-  cubeCount: 1
+  isReversed: 0
+  cubeCount: 10
   cubePrefab: {fileID: 842043861}
+  distributionType: 1
+  cubeInterval: 15
 --- !u!4 &1635862472
 Transform:
   m_ObjectHideFlags: 0
