@@ -12,4 +12,12 @@ public class DiceFaceTrigger : MonoBehaviour
         this.value = value;
         this.floorObject = floorObject;
     }
+
+    private void OnTriggerStay(Collider other)
+    {
+        if (diceController != null && other.gameObject == floorObject)
+        {
+            diceController.RegisterFloorContact(value, GetComponent<Collider>());
+        }
+    }
 }

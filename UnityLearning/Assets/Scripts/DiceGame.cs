@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -12,20 +13,18 @@ public class DiceGame : MonoBehaviour
     [SerializeField] private Vector2 torqueForceRange = new Vector2(5f, 10f);
     [SerializeField] private GameObject floorObject;
 
+    private bool isRolling = false;
     private List<GameObject> Dices = new List<GameObject>();
     private int diceStoppedCount = 0;
     private int totalScore = 0;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
 
-    private void Awake()
-    {
-        CreateDices();
-    }
-
     public void StartRoll()
     {
         Debug.Log("pressed");
+        if (!isRolling)
+            StartCoroutine(RollDices());
     }
     void Start()
     {
@@ -58,5 +57,74 @@ public class DiceGame : MonoBehaviour
             }
             diceController.Initialize(floorObject);
         }
+    }
+
+    private IEnumerator RollDices ()
+    {
+        isRolling = true;
+        totalScore = 0;
+        diceStoppedCount = 0;
+
+        ClearCurrentDices();
+
+        for (int i = 0; i < numberOfDice; i++)
+        {
+            Vector3 spawnOffset = new Vector3(
+                i % 3 * 4,
+                1,
+                i / 3 * 4
+            );
+
+            GameObject dice = Instantiate(dicePrefab, diceSpawnPoint.position + spawnOffset, transform.rotation);
+            dice.transform.SetParent(transform);
+            Dices.Add(dice);
+            DiceController diceController = dice.GetComponent<DiceController>();
+            if (diceController == null)
+            {
+                diceController = dice.AddComponent<DiceController>();
+            }
+            diceController.Initialize(floorObject);
+            diceController.OnDiceStopped += OnDiceStopped;
+
+            Rigidbody rb = dice.GetComponent<Rigidbody>();
+            if (rb != null)
+            {
+                Vector3 Direction = new Vector3(
+                    Random.Range(-1f, 1f),
+                    Random.Range(0.8f, 1f),
+                    Random.Range(-1f, 1f)
+                ).normalized;
+
+                float throwForce = Random.Range(throwForceRange.x, throwForceRange.y);
+                float torqueForce = Random.Range(torqueForceRange.x, torqueForceRange.y);
+
+                rb.AddForce(Direction * throwForce, ForceMode.Impulse);
+                rb.AddTorque(Random.insideUnitSphere * torqueForce, ForceMode.Impulse);
+            }
+        }
+
+        yield return new WaitUntil(() => diceStoppedCount >= numberOfDice);
+
+        Debug.Log($"Total score: {totalScore}");
+        isRolling = false;
+    }
+
+    private void OnDiceStopped(int diceValue, GameObject dice)
+    {
+        diceStoppedCount++;
+        totalScore += diceValue;
+        Debug.Log($"Кубик остановился на {diceValue}");
+    }
+
+    private void ClearCurrentDices()
+    {
+        foreach (GameObject dice in Dices)
+        {
+            if (dice != null)
+            {
+                Destroy(dice);
+            }
+        }
+        Dices.Clear();
     }
 }
