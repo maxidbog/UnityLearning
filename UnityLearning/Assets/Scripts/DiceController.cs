@@ -72,9 +72,9 @@ public class DiceController : MonoBehaviour
     {
         if (faceTriggers.ContainsKey(triggerCollider))
         {
-            float distanceToFloor = Mathf.Abs(triggerCollider.bounds.min.y - floorObject.transform.position.y);
+            float distanceToFloor = triggerCollider.bounds.min.y - floorObject.transform.position.y;
 
-            if (distanceToFloor <= 0.2)
+            if (distanceToFloor <= 0)
             {
                 detectedValue = faceValue;
                 valueDetected = true;

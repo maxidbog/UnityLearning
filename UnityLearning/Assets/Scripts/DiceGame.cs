@@ -12,11 +12,15 @@ public class DiceGame : MonoBehaviour
     [SerializeField] private Vector2 throwForceRange = new Vector2(10f, 15f);
     [SerializeField] private Vector2 torqueForceRange = new Vector2(5f, 10f);
     [SerializeField] private GameObject floorObject;
+    [SerializeField][Range(1,10)] private int spawnSpace = 4;
+    [SerializeField][Range(1, 10)] private int spawnHeight = 1;
+    [SerializeField][Range(1, 5)] private int spawnStack = 3;
 
     private bool isRolling = false;
     private List<GameObject> Dices = new List<GameObject>();
     private int diceStoppedCount = 0;
     private int totalScore = 0;
+
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
 
@@ -28,13 +32,13 @@ public class DiceGame : MonoBehaviour
     }
     void Start()
     {
-        
+
     }
 
     // Update is called once per frame
     void Update()
     {
-        
+
     }
 
     private void CreateDices()
@@ -42,37 +46,9 @@ public class DiceGame : MonoBehaviour
         for (int i = 0; i < numberOfDice; i++)
         {
             Vector3 spawnOffset = new Vector3(
-                i % 3 * 2,
-                1,
-                i / 3 * 2
-            );
-
-            GameObject dice = Instantiate(dicePrefab, diceSpawnPoint.position + spawnOffset, transform.rotation);
-            dice.transform.SetParent(transform);
-            Dices.Add(dice);
-            DiceController diceController = dice.GetComponent<DiceController>();
-            if (diceController == null)
-            {
-                diceController = dice.AddComponent<DiceController>();
-            }
-            diceController.Initialize(floorObject);
-        }
-    }
-
-    private IEnumerator RollDices ()
-    {
-        isRolling = true;
-        totalScore = 0;
-        diceStoppedCount = 0;
-
-        ClearCurrentDices();
-
-        for (int i = 0; i < numberOfDice; i++)
-        {
-            Vector3 spawnOffset = new Vector3(
-                i % 3 * 4,
-                1,
-                i / 3 * 4
+                i % spawnStack * spawnSpace,
+                spawnHeight,
+                i / spawnStack * spawnSpace
             );
 
             GameObject dice = Instantiate(dicePrefab, diceSpawnPoint.position + spawnOffset, transform.rotation);
@@ -85,7 +61,13 @@ public class DiceGame : MonoBehaviour
             }
             diceController.Initialize(floorObject);
             diceController.OnDiceStopped += OnDiceStopped;
+        }
+    }
 
+    private void ForceDices()
+    {
+        foreach (var dice in Dices)
+        {
             Rigidbody rb = dice.GetComponent<Rigidbody>();
             if (rb != null)
             {
@@ -102,6 +84,17 @@ public class DiceGame : MonoBehaviour
                 rb.AddTorque(Random.insideUnitSphere * torqueForce, ForceMode.Impulse);
             }
         }
+    }
+
+    private IEnumerator RollDices ()
+    {
+        isRolling = true;
+        totalScore = 0;
+        diceStoppedCount = 0;
+
+        ClearCurrentDices();
+        CreateDices();
+        ForceDices();
 
         yield return new WaitUntil(() => diceStoppedCount >= numberOfDice);
 

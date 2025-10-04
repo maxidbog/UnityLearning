@@ -13,7 +13,7 @@ public class DiceFaceTrigger : MonoBehaviour
         this.floorObject = floorObject;
     }
 
-    private void OnTriggerStay(Collider other)
+    private void OnTriggerEnter(Collider other)
     {
         if (diceController != null && other.gameObject == floorObject)
         {

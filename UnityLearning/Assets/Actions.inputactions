@@ -12,8 +12,8 @@
                     "id": "b3998fb3-5d71-441d-942b-c767eaf65a07",
                     "expectedControlType": "",
                     "processors": "",
-                    "interactions": "Press(pressPoint=1)",
-                    "initialStateCheck": true
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
