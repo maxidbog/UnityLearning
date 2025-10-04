@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.InputSystem;
 
 public class DiceGame : MonoBehaviour
@@ -8,20 +9,48 @@ public class DiceGame : MonoBehaviour
     [Header("Dice Settings")]
     [SerializeField] private GameObject dicePrefab;
     [SerializeField] private Transform diceSpawnPoint;
-    [SerializeField] private int numberOfDice = 2;
+    [SerializeField] private int dicesCount = 2;
     [SerializeField] private Vector2 throwForceRange = new Vector2(10f, 15f);
     [SerializeField] private Vector2 torqueForceRange = new Vector2(5f, 10f);
     [SerializeField] private GameObject floorObject;
     [SerializeField][Range(1,10)] private int spawnSpace = 4;
     [SerializeField][Range(1, 10)] private int spawnHeight = 1;
     [SerializeField][Range(1, 5)] private int spawnStack = 3;
+    [SerializeField] private int minDrawValue = 6;
+    [SerializeField] private int minWinValue = 8;
+
 
     private bool isRolling = false;
     private List<GameObject> Dices = new List<GameObject>();
     private int diceStoppedCount = 0;
     private int totalScore = 0;
 
+    public UnityEvent OnValuesChanged;
 
+    public int DicesCount
+    {
+        get => dicesCount;
+        set 
+        {
+            dicesCount = value; 
+            CalculateDefaultConditions();
+            OnValuesChanged.Invoke();
+        }
+    }
+    public int TotalScore
+    {
+        get => totalScore;
+    }
+    public int MinDrawValue
+    {
+        get => minDrawValue;
+        set { minDrawValue = value; OnValuesChanged.Invoke(); }
+    }
+    public int MinWinValue
+    {
+        get => minWinValue;
+        set { minWinValue = value; OnValuesChanged.Invoke(); }
+    }
     // Start is called once before the first execution of Update after the MonoBehaviour is created
 
     public void StartRoll()
@@ -30,20 +59,16 @@ public class DiceGame : MonoBehaviour
         if (!isRolling)
             StartCoroutine(RollDices());
     }
-    void Start()
+
+    private void CalculateDefaultConditions()
     {
-
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
+        minDrawValue = dicesCount * 3;
+        minWinValue = dicesCount * 3 + 1;
     }
 
     private void CreateDices()
     {
-        for (int i = 0; i < numberOfDice; i++)
+        for (int i = 0; i < dicesCount; i++)
         {
             Vector3 spawnOffset = new Vector3(
                 i % spawnStack * spawnSpace,
@@ -95,8 +120,9 @@ public class DiceGame : MonoBehaviour
         ClearCurrentDices();
         CreateDices();
         ForceDices();
+        OnValuesChanged.Invoke();
 
-        yield return new WaitUntil(() => diceStoppedCount >= numberOfDice);
+        yield return new WaitUntil(() => diceStoppedCount >= dicesCount);
 
         Debug.Log($"Total score: {totalScore}");
         isRolling = false;
@@ -106,6 +132,7 @@ public class DiceGame : MonoBehaviour
     {
         diceStoppedCount++;
         totalScore += diceValue;
+        OnValuesChanged.Invoke();
         Debug.Log($"Кубик остановился на {diceValue}");
     }
 
