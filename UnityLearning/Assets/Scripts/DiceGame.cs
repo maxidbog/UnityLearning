@@ -51,6 +51,11 @@ public class DiceGame : MonoBehaviour
         get => minWinValue;
         set { minWinValue = value; OnValuesChanged.Invoke(); }
     }
+
+    public bool IsRolling
+    {
+        get => isRolling;
+    }
     // Start is called once before the first execution of Update after the MonoBehaviour is created
 
     public void StartRoll()
@@ -126,6 +131,7 @@ public class DiceGame : MonoBehaviour
 
         Debug.Log($"Total score: {totalScore}");
         isRolling = false;
+        OnValuesChanged.Invoke();
     }
 
     private void OnDiceStopped(int diceValue, GameObject dice)

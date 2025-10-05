@@ -12,6 +12,9 @@ public class UIController : MonoBehaviour
     [SerializeField] private TMP_InputField winTargetField;
     [SerializeField] private TMP_InputField diceCountField;
     [SerializeField] private Button rollButton;
+    [SerializeField] private TextMeshProUGUI finalText;
+
+    private CanvasGroup canvasGroup;
 
 
     private void Awake()
@@ -21,7 +24,7 @@ public class UIController : MonoBehaviour
         winTargetField.onEndEdit.AddListener(ChangeMinWinValue);
         drawTargetField.onEndEdit.AddListener(ChangeMinDrawValue);
         rollButton.onClick.AddListener(gameModel.StartRoll);
-
+        canvasGroup = GetComponent<CanvasGroup>();
         UpdateValues();
     }
 
@@ -30,17 +33,41 @@ public class UIController : MonoBehaviour
         var totalScore = gameModel.TotalScore;
         var minWinValue = gameModel.MinWinValue;
         var minDrawValue = gameModel.MinDrawValue;
+        var isRolling = gameModel.IsRolling;
+        Color color;
+        string textFinal;
         diceCountField.text = gameModel.DicesCount.ToString();
         winTargetField.text = gameModel.MinWinValue.ToString();
         drawTargetField.text = gameModel.MinDrawValue.ToString();
         if (totalScore >= minDrawValue)
         {
             if (totalScore < minWinValue)
-                scoreText.color = Color.yellow;
-            else scoreText.color = Color.green;
+            {
+                color = Color.yellow;
+                textFinal = "Ничья";
+            }
+            else
+            {
+                color = Color.green;
+                textFinal = "Победа";
+            }
         }
-        else scoreText.color = Color.red;
+        else
+        {
+            color = Color.red;
+            textFinal = "Поражение";
+        }
+        scoreText.color = color;
         scoreText.text = $"Score: {gameModel.TotalScore}";
+
+        if (totalScore > 0 && !isRolling)
+        {
+            finalText.color = color;
+            finalText.text = textFinal;
+        }
+        else finalText.text = string.Empty;
+
+        canvasGroup.interactable = isRolling ? false : true;
     }
 
     private void ChangeDiceCount(string input)
